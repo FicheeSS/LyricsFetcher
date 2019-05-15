@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["-i ./folder"]
+            "args": ["-i ./tst/"]
         }
     ]
 }
