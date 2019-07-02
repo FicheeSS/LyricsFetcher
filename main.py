@@ -42,17 +42,20 @@ for ext in  (SUPPORTEDFILES):
 for y in range (len(fileList[0])):
      currentFile  = FLAC(fileList[0][y])
      #print(str(currentFile))
+     lyrics = get_lyrics(currentFile["Artist"],currentFile["title"])
      for LyricsTags in LYRICSTAGS:
-          currentFile[LyricsTags] = get_lyrics(currentFile["Artist"],currentFile["title"])
+          currentFile[LyricsTags] = lyrics
      currentFile.save()
 for y in range (len(fileList[1])):
      currentFile = OggVorbis(fileList[1][y])
+     lyrics = get_lyrics(currentFile["Artist"],currentFile["title"])
      for LyricsTags in LYRICSTAGS:
-          currentFile[LyricsTags] = get_lyrics(currentFile["Artist"],currentFile["title"])
+          currentFile[LyricsTags] = lyrics
      currentFile.save()
 
 for y in range (len(fileList[2])):
      currentFile = MP3(fileList[2][y])
+     lyrics = get_lyrics(currentFile["Artist"],currentFile["title"])
      for LyricsTags in LYRICSTAGS:
-          currentFile[LyricsTags] = get_lyrics(currentFile["Artist"],currentFile["title"])
+          currentFile[LyricsTags] = lyrics
      currentFile.save()
