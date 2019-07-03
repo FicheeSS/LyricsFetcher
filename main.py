@@ -9,13 +9,15 @@ import sys
 import re
 SUPPORTEDFILES =(".flac",".ogg",".mp3")
 LYRICSTAGS = ("UNSYNCEDLYRICS","LYRICS")
+
 def url_contructor(artist,track):
      # example : https://genius.com/Ariana-grande-7-rings-lyrics
      regex = re.compile(".*?\((.*?)\)")
-     track[0] = re.findall(regex, track[0])
-     print(track[0])
-     url = "https://genius.com/" + artist[0].replace(" ","-").lower() + "-" + str(track[0]).replace(" ","-").replace("ä","a").lower() + "-lyrics"
-     #print(url)
+     tobedeleted = re.findall(regex, track[0])s
+     for delete in tobedeleted:
+          track[0] = str(track[0]).replace(str(delete),"").replace("(","").replace(")","")
+          track[0] = track[0].rstrip()
+     url = "https://genius.com/" + artist[0].replace(" ","-").lower() + "-" + str(track[0]).rstrip().replace(" ","-").replace("ä","a").replace("'","-").replace(",","").lower()+ "-lyrics"
      return url
 
 def get_lyrics(artist,track):
@@ -52,13 +54,14 @@ for y in range (len(fileList[0])):
           for LyricsTags in LYRICSTAGS:
                currentFile[LyricsTags] = lyrics
           currentFile.save()
+#in case oggvorbis
 for y in range (len(fileList[1])):
      currentFile = OggVorbis(fileList[1][y])
      lyrics = get_lyrics(currentFile["Artist"],currentFile["title"])
      for LyricsTags in LYRICSTAGS:
           currentFile[LyricsTags] = lyrics
      currentFile.save()
-
+#in case Mp3
 for y in range (len(fileList[2])):
      currentFile = MP3(fileList[2][y])
      lyrics = get_lyrics(currentFile["Artist"],currentFile["title"])
