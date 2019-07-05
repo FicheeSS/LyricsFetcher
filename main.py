@@ -4,20 +4,28 @@ from bs4 import BeautifulSoup
 import urllib.request
 from mutagen.mp3 import MP3
 from mutagen.oggvorbis import OggVorbis
+from mutagen.mp4 import MP4
 import glob
 import sys
 import re
-SUPPORTEDFILES =(".flac",".ogg",".mp3")
+from mutagen.easyid3 import EasyID3
+import mutagen
+SUPPORTEDFILES =(".flac",".ogg",".mp3",".m4a",".mp4")
 LYRICSTAGS = ("UNSYNCEDLYRICS","LYRICS")
+Nfailedfiles = 0
+TOTALFILES = 0
+
 
 def url_contructor(artist,track):
      # example : https://genius.com/Ariana-grande-7-rings-lyrics
-     regex = re.compile(".*?\((.*?)\)")
-     tobedeleted = re.findall(regex, track[0])s
-     for delete in tobedeleted:
+     regexparen = re.compile(".*?\((.*?)\)")
+     regexcrochet = re.compile(".*?\[.*?\]")
+     for delete in re.findall(regexparen, track[0]):
           track[0] = str(track[0]).replace(str(delete),"").replace("(","").replace(")","")
-          track[0] = track[0].rstrip()
-     url = "https://genius.com/" + artist[0].replace(" ","-").lower() + "-" + str(track[0]).rstrip().replace(" ","-").replace("ä","a").replace("'","-").replace(",","").lower()+ "-lyrics"
+     for delete in re.findall(regexcrochet, track[0]):
+          track[0] = str(track[0]).replace(str(delete),"").replace("[","").replace("]","")
+     track[0] = str(track[0]).rstrip()
+     url = "https://genius.com/" + artist[0].replace(" ","-").lower() + "-" + str(track[0]).replace(" ","-").replace("ä","a").replace("'","").replace(",","").replace("/","-").replace(".","").lower()+ "-lyrics"
      return url
 
 def get_lyrics(artist,track):
@@ -40,31 +48,72 @@ def get_lyrics(artist,track):
      soup = soup.get_text(separator=" ")
      #print(soup)
      return soup
+def GetLyrics(MFile):  
+     try :
+          lyrics = get_lyrics(MFile["Artist"],MFile["title"]) 
+     except KeyError:
+          try :
+               lyrics = get_lyrics(MFile["Artist"],MFile["Title"])
+          except KeyError:
+               print("File is lacking at least one tags ")
+               return ""
+          return lyrics
+     return lyrics
 
 
 fileList = []
+ProcessFile = []
 for ext in  (SUPPORTEDFILES):
      fileList.append(glob.glob("**/*"+ext,recursive=True))
 #in case flac:
-for y in range (len(fileList[0])):
-     currentFile  = FLAC(fileList[0][y])
-     lyrics = get_lyrics(currentFile["Artist"],currentFile["title"])
+for SFiles in SUPPORTEDFILES:
+     if SFiles == ".flac":
+          for y in range(len(fileList[0])):
+               ProcessFile.append(FLAC(fileList[0][y]))
+               TOTALFILES += 1
+     elif SFiles == ".ogg":
+          for y in range(len(fileList[1])):
+               ProcessFile.append(OggVorbis(fileList[1][y]))
+               TOTALFILES += 1
+     elif SFiles == ".mp3":
+          for y in range(len(fileList[2])):
+               try :
+                    ProcessFile.append(EasyID3(fileList[2][y]))
+                    TOTALFILES += 1     
+               except :
+                    ProcessFile.append(MP3(fileList[2][y]))
+                    TOTALFILES += 1
+     elif SFiles == ".m4a" or SFiles == ".mp4":
+          for y in range(len(fileList[3])):
+               ProcessFile.append(MP4(fileList[3][y]))
+               TOTALFILES += 1
+          for y in range(len(fileList[4])):
+               ProcessFile.append(MP4(fileList[4][y]))
+               TOTALFILES += 1 
+
+print(str(TOTALFILES) + " files found")
+
+for MFile in ProcessFile:
+     lyrics = GetLyrics(MFile) 
+     i = 0
      if len(lyrics) != 0: 
-          print("File " + str(y) +" / " + str(len(fileList[0]))+  " : " + str(int(y/len(fileList[0])*100)) + " %")
+          print("File " + str(ProcessFile.index(MFile)) +" / " + str(len(ProcessFile))+  " : " + str(int(ProcessFile.index(MFile)/len(ProcessFile)*100)) + " %")
           for LyricsTags in LYRICSTAGS:
-               currentFile[LyricsTags] = lyrics
-          currentFile.save()
-#in case oggvorbis
-for y in range (len(fileList[1])):
-     currentFile = OggVorbis(fileList[1][y])
-     lyrics = get_lyrics(currentFile["Artist"],currentFile["title"])
-     for LyricsTags in LYRICSTAGS:
-          currentFile[LyricsTags] = lyrics
-     currentFile.save()
-#in case Mp3
-for y in range (len(fileList[2])):
-     currentFile = MP3(fileList[2][y])
-     lyrics = get_lyrics(currentFile["Artist"],currentFile["title"])
-     for LyricsTags in LYRICSTAGS:
-          currentFile[LyricsTags] = lyrics
-     currentFile.save()
+               try :
+                    MFile[LyricsTags] = lyrics
+                    MFile.save()
+               except TypeError:
+                    if i == len(LYRICSTAGS):
+                         print("Malformed lyrics")
+                    else :
+                         i += 1
+               except EasyID3KeyError :
+                    MFile["LYR"] = lyrics
+                    MFile.save()
+
+     else :
+          Nfailedfiles += 1
+
+print("All files have been processed ")
+print("Lyrics found : "+str(TOTALFILES-Nfailedfiles) + ". Lyrics not found or instrumental : " +str(Nfailedfiles) )
+
