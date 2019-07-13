@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import urllib.request
 from mutagen.mp3 import MP3
 from mutagen.oggvorbis import OggVorbis
-from mutagen.mp4 import MP4
+from mutagen.easymp4 import EasyMP4
 import glob
 import sys
 import re
@@ -37,7 +37,7 @@ def get_lyrics(artist,track):
           req = urllib.request.Request(url_contructor(artist,track),headers={'User-Agent' : "Magic Browser"})
           html = urllib.request.urlopen(req)
      except urllib.error.HTTPError:
-          print("Lyrics not find " + str(artist) + " "+ str(track))
+          print("Lyrics not found " + str(artist) + " "+ str(track))
           return ""
      except urllib.error.URLError:
           print("Incorect URL for "+str(url_contructor(artist,track)) )
@@ -87,11 +87,11 @@ for SFiles in SUPPORTEDFILES:
                     TOTALFILES += 1
      elif SFiles == ".m4a" or SFiles == ".mp4":
           for y in range(len(fileList[3])):
-               ProcessFile.append(MP4(fileList[3][y]))
+               ProcessFile.append(EasyMP4(fileList[3][y]))
                TOTALFILES += 1
           for y in range(len(fileList[4])):
-               ProcessFile.append(MP4(fileList[4][y]))
-               TOTALFILES += 1 
+               ProcessFile.append(EasyMP4(fileList[4][y]))
+               TOTALFILES += 1
 
 print(str(TOTALFILES) + " files found")
 
@@ -111,8 +111,12 @@ for MFile in ProcessFile:
                     else :
                          i += 1
                except KeyError :
-                    MFile["lyricist"] = lyrics
-                    MFile.save()
+                    try :
+                         MFile["lyricist"] = lyrics 
+                         MFile.save()
+                    except :
+                         MFile["lyric"]
+
 
      else :
           Nfailedfiles += 1
