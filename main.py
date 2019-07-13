@@ -10,14 +10,14 @@ import sys
 import re
 from mutagen.easyid3 import EasyID3
 import mutagen
+from mutagen.id3 import USLT
 SUPPORTEDFILES =(".flac",".ogg",".mp3",".m4a",".mp4")
 LYRICSTAGS = ("UNSYNCEDLYRICS","LYRICS")
 Nfailedfiles = 0
 TOTALFILES = 0
-
+URL_CARSET = [("ä","a"),(" ","-"),("'",""),(",",""),("/","-"),(".",""),("û","u"),("ü","u"),("ù","u"),("?","")]
 
 def url_contructor(artist,track):
-     # example : https://genius.com/Ariana-grande-7-rings-lyrics
      regexparen = re.compile(".*?\((.*?)\)")
      regexcrochet = re.compile(".*?\[.*?\]")
      for delete in re.findall(regexparen, track[0]):
@@ -25,7 +25,10 @@ def url_contructor(artist,track):
      for delete in re.findall(regexcrochet, track[0]):
           track[0] = str(track[0]).replace(str(delete),"").replace("[","").replace("]","")
      track[0] = str(track[0]).rstrip()
-     url = "https://genius.com/" + artist[0].replace(" ","-").lower() + "-" + str(track[0]).replace(" ","-").replace("ä","a").replace("'","").replace(",","").replace("/","-").replace(".","").lower()+ "-lyrics"
+     for carset in URL_CARSET : 
+          track[0] = track[0].replace(carset[0],carset[1])
+          artist[0] = artist[0].replace(carset[0],carset[1])
+     url = "https://genius.com/" + artist[0].lower() + "-" + track[0].lower()+ "-lyrics"
      return url
 
 def get_lyrics(artist,track):
@@ -43,14 +46,13 @@ def get_lyrics(artist,track):
           print("Non-Ascii symbol in "+ str(artist) + " "+ str(track))
           return ""
      soup = BeautifulSoup(html,features="html.parser")
-     #print(soup.prettify())
      soup = soup.find("div",attrs={"class" : "lyrics"})
      soup = soup.get_text(separator=" ")
-     #print(soup)
      return soup
+
 def GetLyrics(MFile):  
      try :
-          lyrics = get_lyrics(MFile["Artist"],MFile["title"]) 
+          lyrics = get_lyrics(MFile["artist"],MFile["title"]) 
      except KeyError:
           try :
                lyrics = get_lyrics(MFile["Artist"],MFile["Title"])
@@ -105,10 +107,11 @@ for MFile in ProcessFile:
                except TypeError:
                     if i == len(LYRICSTAGS):
                          print("Malformed lyrics")
+                         Nfailedfiles += 1
                     else :
                          i += 1
-               except EasyID3KeyError :
-                    MFile["LYR"] = lyrics
+               except KeyError :
+                    MFile["lyricist"] = lyrics
                     MFile.save()
 
      else :
