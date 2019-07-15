@@ -112,10 +112,13 @@ for MFile in ProcessFile:
                          i += 1
                except KeyError :
                     try :
+                         #case ID3
                          MFile["lyricist"] = lyrics 
                          MFile.save()
                     except :
-                         MFile["lyric"]
+                         #case MP4 only works with modified mutagen EasyMP4 library
+                         MFile["lyrics"]
+                         MFile.save()
 
 
      else :
