@@ -9,8 +9,7 @@ import glob
 import sys
 import re
 from mutagen.easyid3 import EasyID3
-import mutagen
-from mutagen.id3 import USLT
+
 SUPPORTEDFILES =(".flac",".ogg",".mp3",".m4a",".mp4")
 LYRICSTAGS = ("UNSYNCEDLYRICS","LYRICS")
 Nfailedfiles = 0
@@ -50,7 +49,7 @@ def get_lyrics(artist,track):
      soup = soup.get_text(separator=" ")
      return soup
 
-def GetLyrics(MFile):  
+def GetLyricsFromFile(MFile):  
      try :
           lyrics = get_lyrics(MFile["artist"],MFile["title"]) 
      except KeyError:
@@ -96,7 +95,7 @@ for SFiles in SUPPORTEDFILES:
 print(str(TOTALFILES) + " files found")
 
 for MFile in ProcessFile:
-     lyrics = GetLyrics(MFile) 
+     lyrics = GetLyricsFromFile(MFile) 
      i = 0
      if len(lyrics) != 0: 
           print("File " + str(ProcessFile.index(MFile)) +" / " + str(len(ProcessFile))+  " : " + str(int(ProcessFile.index(MFile)/len(ProcessFile)*100)) + " %")
