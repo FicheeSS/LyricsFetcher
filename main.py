@@ -7,6 +7,7 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.easymp4 import EasyMP4
 import glob
 import sys
+import multiprocessing
 import re
 from mutagen.easyid3 import EasyID3
 
@@ -58,71 +59,74 @@ def GetLyricsFromFile(MFile):
           except KeyError:
                print("File is lacking at least one tags ")
                return ""
-          return lyrics
-     return lyrics
+          exit(lyrics) 
+     exit(lyrics)
 
-
-fileList = []
-ProcessFile = []
-for ext in  (SUPPORTEDFILES):
-     fileList.append(glob.glob("**/*"+ext,recursive=True))
-#in case flac:
-for SFiles in SUPPORTEDFILES:
-     if SFiles == ".flac":
-          for y in range(len(fileList[0])):
-               ProcessFile.append(FLAC(fileList[0][y]))
-               TOTALFILES += 1
-     elif SFiles == ".ogg":
-          for y in range(len(fileList[1])):
-               ProcessFile.append(OggVorbis(fileList[1][y]))
-               TOTALFILES += 1
-     elif SFiles == ".mp3":
-          for y in range(len(fileList[2])):
-               try :
-                    ProcessFile.append(EasyID3(fileList[2][y]))
-                    TOTALFILES += 1     
-               except :
-                    ProcessFile.append(MP3(fileList[2][y]))
+if __name__ == '__main__':
+     fileList = []
+     ProcessFile = []
+     for ext in  (SUPPORTEDFILES):
+          fileList.append(glob.glob("**/*"+ext,recursive=True))
+     #in case flac:
+     for SFiles in SUPPORTEDFILES:
+          if SFiles == ".flac":
+               for y in range(len(fileList[0])):
+                    ProcessFile.append(FLAC(fileList[0][y]))
                     TOTALFILES += 1
-     elif SFiles == ".m4a" or SFiles == ".mp4":
-          for y in range(len(fileList[3])):
-               ProcessFile.append(EasyMP4(fileList[3][y]))
-               TOTALFILES += 1
-          for y in range(len(fileList[4])):
-               ProcessFile.append(EasyMP4(fileList[4][y]))
-               TOTALFILES += 1
-
-print(str(TOTALFILES) + " files found")
-
-for MFile in ProcessFile:
-     lyrics = GetLyricsFromFile(MFile) 
-     i = 0
-     if len(lyrics) != 0: 
-          print("File " + str(ProcessFile.index(MFile)) +" / " + str(len(ProcessFile))+  " : " + str(int(ProcessFile.index(MFile)/len(ProcessFile)*100)) + " %")
-          for LyricsTags in LYRICSTAGS:
-               try :
-                    MFile[LyricsTags] = lyrics
-                    MFile.save()
-               except TypeError:
-                    if i == len(LYRICSTAGS):
-                         print("Malformed lyrics")
-                         Nfailedfiles += 1
-                    else :
-                         i += 1
-               except KeyError :
+          elif SFiles == ".ogg":
+               for y in range(len(fileList[1])):
+                    ProcessFile.append(OggVorbis(fileList[1][y]))
+                    TOTALFILES += 1
+          elif SFiles == ".mp3":
+               for y in range(len(fileList[2])):
                     try :
-                         #case ID3
-                         MFile["lyricist"] = lyrics 
-                         MFile.save()
+                         ProcessFile.append(EasyID3(fileList[2][y]))
+                         TOTALFILES += 1     
                     except :
-                         #case MP4 only works with modified mutagen EasyMP4 library
-                         MFile["lyrics"]
+                         ProcessFile.append(MP3(fileList[2][y]))
+                         TOTALFILES += 1
+          elif SFiles == ".m4a" or SFiles == ".mp4":
+               for y in range(len(fileList[3])):
+                    ProcessFile.append(EasyMP4(fileList[3][y]))
+                    TOTALFILES += 1
+               for y in range(len(fileList[4])):
+                    ProcessFile.append(EasyMP4(fileList[4][y]))
+                    TOTALFILES += 1
+
+     print(str(TOTALFILES) + " files found")
+     jobs = []
+     for MFile in ProcessFile:
+          p = multiprocessing.Process(target=GetLyricsFromFile, args=(MFile,))
+          print("File " + str(ProcessFile.index(MFile)) +" / " + str(len(ProcessFile))+  " : " + str(int(ProcessFile.index(MFile)/len(ProcessFile)*100)) + " %")
+          jobs.append(p)
+          p.start()
+     for proc in jobs :
+          proc.join()
+          lyrics = proc.exitcode
+          i = 0
+          if len(lyrics) != 0: 
+               for LyricsTags in LYRICSTAGS:
+                    try :
+                         MFile[LyricsTags] = lyrics
                          MFile.save()
+                    except TypeError:
+                         if i == len(LYRICSTAGS):
+                              print("Malformed lyrics")
+                              Nfailedfiles += 1
+                         else :
+                              i += 1
+                    except KeyError :
+                         try :
+                              #case ID3
+                              MFile["lyricist"] = lyrics 
+                              MFile.save()
+                         except :
+                              #case MP4 only works with modified mutagen EasyMP4 library
+                              MFile["lyrics"]
+                              MFile.save()
+          else :
+               Nfailedfiles += 1
 
-
-     else :
-          Nfailedfiles += 1
-
-print("All files have been processed ")
-print("Lyrics found : "+str(TOTALFILES-Nfailedfiles) + ". Lyrics not found or instrumental : " +str(Nfailedfiles) )
+     print("All files have been processed ")
+     print("Lyrics found : "+str(TOTALFILES-Nfailedfiles) + ". Lyrics not found or instrumental : " +str(Nfailedfiles) )
 
