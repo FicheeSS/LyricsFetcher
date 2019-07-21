@@ -17,6 +17,7 @@ global Nfailedfiles
 TOTALFILES = 0
 URL_CARSET = [("ä","a"),(" ","-"),("'",""),(",",""),("/","-"),(".",""),("û","u"),("ü","u"),("ù","u"),("?","")]
 Nfailedfiles = 0
+JobLimit = 50
 
 def url_contructor(artist,track):
      regexparen = re.compile(".*?\((.*?)\)")
@@ -122,15 +123,24 @@ if __name__ == '__main__':
                     TOTALFILES += 1
 
      print(str(TOTALFILES) + " files found")
+     JobsFile = []
+     for i in range(int(len(ProcessFile)/JobLimit)+1):
+          if (len(ProcessFile) - JobLimit * i ) > JobLimit:
+               for y in range(JobLimit) :
+                    print("i = "+str(i))
+                    print("y = "+str(y))
+                    JobsFile[i][y].append(ProcessFile[(i+1) * y])
+          else :
+               for y in range(len(ProcessFile) - JobLimit * i) :
+                    JobsFile[i][y].append(ProcessFile[(i+1) * y])
      jobs = []
-     for MFile in ProcessFile:
-          p = multiprocessing.Process(target=SetLyricsToFiles, args=(MFile,))
-          print("File " + str(ProcessFile.index(MFile)) +" / " + str(len(ProcessFile))+  " : " + str(int(ProcessFile.index(MFile)/len(ProcessFile)*100)) + " %")
-          jobs.append(p)
-          p.start()
-     for proc in jobs :
-          proc.join()
-          lyrics = proc.exitcode
+     for i in range(JobsFile) : 
+          for y in range(JobsFile[i]):
+               p = multiprocessing.Process(target=SetLyricsToFiles, args=(JobsFile[y][i],))
+               jobs.append(p)
+               p.start()
+          for proc in jobs :
+               proc.join()
 
      print("All files have been processed ")
      print("Lyrics found : "+str(TOTALFILES-Nfailedfiles) + ". Lyrics not found or instrumental : " +str(Nfailedfiles) )
