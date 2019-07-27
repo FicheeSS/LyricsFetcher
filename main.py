@@ -139,7 +139,7 @@ if __name__ == '__main__':
                p.start()
           for proc in jobs :
                proc.join()
-          print("Batch :" + str(i+1) + " out of : " + str(len(JobsFile)))
+          print("Batch : " + str(i+1) + " out of : " + str(len(JobsFile)))
 
      print("All files have been processed ")
 
