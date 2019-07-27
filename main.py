@@ -13,10 +13,8 @@ from mutagen.easyid3 import EasyID3
 
 SUPPORTEDFILES =(".flac",".ogg",".mp3",".m4a",".mp4")
 LYRICSTAGS = ("UNSYNCEDLYRICS","LYRICS")
-global Nfailedfiles 
 TOTALFILES = 0
 URL_CARSET = [("ä","a"),(" ","-"),("'",""),(",",""),("/","-"),(".",""),("û","u"),("ü","u"),("ù","u"),("?","")]
-Nfailedfiles = 0
 JobLimit = 50
 
 def url_contructor(artist,track):
@@ -64,7 +62,7 @@ def GetLyricsFromFile(MFile):
           return lyrics 
      return lyrics
 
-def SetLyricsToFiles(Mfile):
+def SetLyricsToFiles(MFile):
      lyrics = GetLyricsFromFile(MFile)
      i = 0
      if len(lyrics) != 0: 
@@ -75,7 +73,7 @@ def SetLyricsToFiles(Mfile):
                except TypeError:
                     if i == len(LYRICSTAGS):
                          print("Malformed lyrics")
-                         Nfailedfiles += 1
+                         #Nfailedfiles += 1
                     else :
                          i += 1
                except KeyError :
@@ -87,16 +85,16 @@ def SetLyricsToFiles(Mfile):
                          #case MP4 only works with modified mutagen EasyMP4 library
                          MFile["lyrics"]
                          MFile.save()
-     else :
-          Nfailedfiles += 1
+#     else :
+          #Nfailedfiles += 1
       
 
 if __name__ == '__main__':
+     #q = Queue.Queue("50")
      fileList = []
      ProcessFile = []
      for ext in  (SUPPORTEDFILES):
           fileList.append(glob.glob("**/*"+ext,recursive=True))
-     #in case flac:
      for SFiles in SUPPORTEDFILES:
           if SFiles == ".flac":
                for y in range(len(fileList[0])):
@@ -124,24 +122,24 @@ if __name__ == '__main__':
 
      print(str(TOTALFILES) + " files found")
      JobsFile = []
+     for i in range(int(len(ProcessFile)/JobLimit+1)):
+          JobsFile.append([])
      for i in range(int(len(ProcessFile)/JobLimit)+1):
           if (len(ProcessFile) - JobLimit * i ) > JobLimit:
                for y in range(JobLimit) :
-                    print("i = "+str(i))
-                    print("y = "+str(y))
-                    JobsFile[i][y].append(ProcessFile[(i+1) * y])
+                    JobsFile[i].append(ProcessFile[(i+1) * y])
           else :
                for y in range(len(ProcessFile) - JobLimit * i) :
-                    JobsFile[i][y].append(ProcessFile[(i+1) * y])
+                    JobsFile[i].append(ProcessFile[(i+1) * y])
      jobs = []
-     for i in range(JobsFile) : 
-          for y in range(JobsFile[i]):
-               p = multiprocessing.Process(target=SetLyricsToFiles, args=(JobsFile[y][i],))
+     for i in range(len(JobsFile)) : 
+          for y in range(len(JobsFile[i])):
+               p = multiprocessing.Process(target=SetLyricsToFiles, args=(JobsFile[i][y],))
                jobs.append(p)
                p.start()
           for proc in jobs :
                proc.join()
+          print("Batch :" + str(i+1) + " out of : " + str(len(JobsFile)))
 
      print("All files have been processed ")
-     print("Lyrics found : "+str(TOTALFILES-Nfailedfiles) + ". Lyrics not found or instrumental : " +str(Nfailedfiles) )
 
