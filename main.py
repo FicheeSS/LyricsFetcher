@@ -83,8 +83,11 @@ def SetLyricsToFiles(MFile):
                          MFile.save()
                     except :
                          #case MP4 only works with modified mutagen EasyMP4 library
-                         MFile["lyrics"]
-                         MFile.save()
+                         try :
+                              MFile["lyrics"] = lyrics
+                              MFile.save()
+                         except :
+                              print("Please use modified Mutagen EasyMp4 library with lyrics tag")
 #     else :
           #Nfailedfiles += 1
       
