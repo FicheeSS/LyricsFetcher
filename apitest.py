@@ -7,9 +7,6 @@ api = Api(app)
 
 class Lyrics (Resource):
     def get(self, artist , track):
-        artist = "sirenia"
-        track = "decadence"
-        print("artist = "+ artist + " track = " + track )
         if artist == "" or track == "":
             return "One of the input is empty" , 400
         else :
@@ -24,4 +21,4 @@ api.add_resource(
     '/lyrics/<artist>/<track>', 
     methods=["GET"]
 )
-app.run(debug=True)
+app.run()
