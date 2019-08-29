@@ -7,15 +7,17 @@ from Options import URL_CARSET
 def UrlConstructor(artist,track):
      regexparen = re.compile(".*?\((.*?)\)")
      regexcrochet = re.compile(".*?\[.*?\]")
-     for delete in re.findall(regexparen, track[0]):
-          track[0] = str(track[0]).replace(str(delete),"").replace("(","").replace(")","")
-     for delete in re.findall(regexcrochet, track[0]):
-          track[0] = str(track[0]).replace(str(delete),"").replace("[","").replace("]","")
-     track[0] = str(track[0]).rstrip()
+     track = track[0]
+     artist = artist[0]
+     for delete in re.findall(regexparen, track):
+          track = str(track).replace(str(delete),"").replace("(","").replace(")","")
+     for delete in re.findall(regexcrochet, track):
+          track = str(track).replace(str(delete),"").replace("[","").replace("]","")
+     track = str(track).rstrip()
      for carset in URL_CARSET : 
-          track[0] = track[0].replace(carset[0],carset[1])
-          artist[0] = artist[0].replace(carset[0],carset[1])
-     url = "https://genius.com/" + artist[0].lower() + "-" + track[0].lower()+ "-lyrics"
+          track = track.replace(carset[0],carset[1])
+          artist = artist.replace(carset[0],carset[1])
+     url = "https://genius.com/" + artist.lower() + "-" + track.lower()+ "-lyrics"
      return url
 
 def GetLyrics(artist,track):
