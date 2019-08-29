@@ -21,4 +21,4 @@ api.add_resource(
     '/lyrics/<artist>/<track>', 
     methods=["GET"]
 )
-app.run()
+app.run(host='0.0.0.0')
