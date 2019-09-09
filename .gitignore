@@ -1,1 +1,3 @@
-tst/1 - Words of Wisdom.flac
+__pycache__
+.vscode/
+ui.py
