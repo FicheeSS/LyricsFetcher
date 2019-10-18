@@ -6,7 +6,7 @@ import multiprocessing
 import matplotlib.pyplot as plt
 
 from main import *
-max_tests = 33
+max_tests = 25
 tstFiles = []
 for i in range(max_tests):
     tstFiles.append(FLAC(os.getcwd() + "/tstFile.flac"))
@@ -52,9 +52,9 @@ with open("results.csv","w") as csv_file:
      csv_writer.writerow(BatchNumber)
      csv_writer.writerow(TimeResults)
 
-plt.plot(TimeResults,BatchNumber,label="Time taken [s]")
-plt.ylabel("Time taken [s]")
-plt.xlabel("Number of batch")
+plt.plot(BatchNumber,TimeResults,label="Time taken [s]")
+plt.xlabel("Time taken [s]")
+plt.ylabel("Number of batch")
 plt.savefig("results.png")
 plt.show()
 
