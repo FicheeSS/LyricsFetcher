@@ -87,6 +87,7 @@ if __name__ == '__main__':
             jobs.append(p)
         for proc in jobs:
             proc.join()
+
         print("Batch : " + str(i+1) + " out of : " + str(len(JobsFile)))
 
     print("Time taken : " + str(time.time() - startupTime))
