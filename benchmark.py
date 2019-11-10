@@ -5,8 +5,12 @@ import csv
 import multiprocessing
 import matplotlib.pyplot as plt
 from main import *
+<<<<<<< HEAD
 
-max_tests = 20
+max_tests = 25
+=======
+max_tests = 25
+>>>>>>> 713c19eef18788515ae58d92195ebeaa26e35e4e
 tstFiles = []
 for i in range(max_tests):
     tstFiles.append(FLAC(os.getcwd() + "/tstFile.flac"))
