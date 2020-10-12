@@ -1,5 +1,5 @@
 # LyricsFetcher
-This scrpit is made to find any lyrics with any provided artist and song name.
+This scrpit is made to find any lyrics with any supported music file.
 
 # How to
 
