@@ -15,4 +15,5 @@ python3 main.py
 ```
  # Dependecies 
   -[Mutagen](https://github.com/quodlibet/mutagen)
+  -[BS4](https://www.crummy.com/software/BeautifulSoup/)
 
