@@ -21,7 +21,10 @@ def UrlConstructor(artist,track):
 def GetLyrics(artist,track):
      html = ""
      try :
-          req = urllib.request.Request(UrlConstructor(artist,track),headers={'User-Agent' : "Magic Browser"})
+          url = UrlConstructor(artist,track)
+          if not url:
+               return ""
+          req = urllib.request.Request(url,headers={'User-Agent' : "Magic Browser"})
           html = urllib.request.urlopen(req)
      except urllib.error.HTTPError:
           print("Lyrics not found " + str(artist) + " "+ str(track))
@@ -32,8 +35,9 @@ def GetLyrics(artist,track):
      except UnicodeEncodeError :
           print("Non-Ascii symbol in "+ str(artist) + " "+ str(track))
           return ""
-     soup = BeautifulSoup(html,features="html.parser").find("div",attrs={"class" : "lyrics"})
-     if not soup:
-          return soup.get_text(separator=" ")
-     else :
-          return ""
+     try:
+          soup = BeautifulSoup(html,features="html.parser").find("div",attrs={"class" : "lyrics"}).get_text(separator=" ")
+     except :
+          soup =""
+     finally:
+          return soup

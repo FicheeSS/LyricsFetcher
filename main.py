@@ -16,6 +16,7 @@ import os
 TOTALFILES = 0
 
 def GetLyricsFromFile(MFile):  
+     
      try :
           lyrics = GetLyrics(MFile["artist"],MFile["title"]) 
      except KeyError:
