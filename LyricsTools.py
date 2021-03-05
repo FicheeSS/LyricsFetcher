@@ -33,7 +33,7 @@ def GetLyrics(artist,track):
           print("Non-Ascii symbol in "+ str(artist) + " "+ str(track))
           return ""
      soup = BeautifulSoup(html,features="html.parser").find("div",attrs={"class" : "lyrics"})
-     if not soup
+     if not soup:
           return soup.get_text(separator=" ")
      else :
           return ""
