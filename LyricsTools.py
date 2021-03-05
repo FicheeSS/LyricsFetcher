@@ -32,5 +32,8 @@ def GetLyrics(artist,track):
      except UnicodeEncodeError :
           print("Non-Ascii symbol in "+ str(artist) + " "+ str(track))
           return ""
-     soup = BeautifulSoup(html,features="html.parser").find("div",attrs={"class" : "lyrics"}).get_text(separator=" ")
-     return soup
+     soup = BeautifulSoup(html,features="html.parser").find("div",attrs={"class" : "lyrics"})
+     if not soup
+          return soup.get_text(separator=" ")
+     else :
+          return ""
