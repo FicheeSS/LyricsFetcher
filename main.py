@@ -122,14 +122,13 @@ def SetLyricsToFiles(MFile):
                               MFile["lyrics"] = lyrics
                               MFile.save()
                          except :
-                              print("Please use modified Mutagen EasyMp4 library with lyrics tag")#     else :
-          #Nfailedfiles += 1
+                              print("Please use modified Mutagen EasyMp4 library with lyrics tag")
       
 
 if __name__ == '__main__':
      parser = argparse.ArgumentParser()
      parser.add_argument(dest='loc', metavar='d', type=str,
-                         help='process file location ')
+                         help='process file location ',required=False)
      args = parser.parse_args()
      if not args.loc or not os.path.exists(args.loc):
           print("Using current working directory")
