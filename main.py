@@ -126,42 +126,44 @@ def SetLyricsToFiles(MFile):
       
 
 if __name__ == '__main__':
+     args = None
      parser = argparse.ArgumentParser()
-     parser.add_argument(dest='loc', metavar='d', type=str,
-                         help='process file location ',required=False)
-     args = parser.parse_args()
-     if not args.loc or not os.path.exists(args.loc):
-          print("Using current working directory")
-          ProcessFile = SearchMusicFiles(os.getcwd())
-     else :
-          print("Using provided directory")
-          ProcessFile = SearchMusicFiles(args.loc)
-     #print(ProcessFile)
-     startupTime = time.time()
-     print(str(len(ProcessFile)) + " files found")
-     #Cut the ProcessFile list into list of JobLimit size
-     JobsFile = []
-     for i in range(int(len(ProcessFile)/JobLimit+1)):
-          JobsFile.append([])
-     for i in range(int(len(ProcessFile)/JobLimit)+1):
-          if (len(ProcessFile) - JobLimit * i ) > JobLimit:
-               for y in range(JobLimit) :
-                    JobsFile[i].append(ProcessFile[(i+1) * y])
+     parser.add_argument("-l","--localisation",dest='loc', type=str,help='process file location ')
+     try : 
+          args = parser.parse_args()
+     finally : 
+          if not args or not args.loc or not os.path.exists(args.loc):
+               print("Using current working directory")
+               ProcessFile = SearchMusicFiles(os.getcwd())
           else :
-               for y in range(len(ProcessFile) - JobLimit * i) :
-                    JobsFile[i].append(ProcessFile[(i+1) * y])
-     print("Starting to process files ")
-     jobs = []
-     for i in range(len(JobsFile)) : 
-          for y in range(len(JobsFile[i])):
-               p = multiprocessing.Process(target=SetLyricsToFiles, args=(JobsFile[i][y],))
-               p.start()
-               jobs.append(p)
-          for proc in jobs :
-               proc.join()
-          print("Batch : " + str(i+1) + " out of : " + str(len(JobsFile)))
-     
-     print("Time taken : " + str(time.time() - startupTime))
-     print("All files have been processed ")
-     sys.exit(0)
+               print("Using provided directory")
+               ProcessFile = SearchMusicFiles(args.loc)
+          #print(ProcessFile)
+          startupTime = time.time()
+          print(str(len(ProcessFile)) + " files found")
+          #Cut the ProcessFile list into list of JobLimit size
+          JobsFile = []
+          for i in range(int(len(ProcessFile)/JobLimit+1)):
+               JobsFile.append([])
+          for i in range(int(len(ProcessFile)/JobLimit)+1):
+               if (len(ProcessFile) - JobLimit * i ) > JobLimit:
+                    for y in range(JobLimit) :
+                         JobsFile[i].append(ProcessFile[(i+1) * y])
+               else :
+                    for y in range(len(ProcessFile) - JobLimit * i) :
+                         JobsFile[i].append(ProcessFile[(i+1) * y])
+          print("Starting to process files ")
+          jobs = []
+          for i in range(len(JobsFile)) : 
+               for y in range(len(JobsFile[i])):
+                    p = multiprocessing.Process(target=SetLyricsToFiles, args=(JobsFile[i][y],))
+                    p.start()
+                    jobs.append(p)
+               for proc in jobs :
+                    proc.join()
+               print("Batch : " + str(i+1) + " out of : " + str(len(JobsFile)))
+          
+          print("Time taken : " + str(time.time() - startupTime))
+          print("All files have been processed ")
+          sys.exit(0)
 
