@@ -80,8 +80,9 @@ def GetLyricsInFiles(MFile):
                          try :
                               lyrics = MFile["lyrics"] 
                          except :
-                              print("Please use modified Mutagen EasyMp4 library with lyrics tag")
+                              pass
      return lyrics 
+
 def SearchMusicFiles(dir) : 
     fileList = []
     ProcessFile = []
@@ -150,7 +151,7 @@ def SetLyricsToFiles(MFile):
                               MFile["lyrics"] = lyrics
                               MFile.save()
                          except :
-                              print("Please use modified Mutagen EasyMp4 library with lyrics tag")
+                              pass
       
 
 if __name__ == '__main__':
@@ -191,7 +192,7 @@ if __name__ == '__main__':
                     proc.join()
                print("Batch : " + str(i+1) + " out of : " + str(len(JobsFile)))
           
-          print("Time taken : " + str(time.time() - startupTime))
+          print("Time taken : " + str(time.time() - startupTime)+ " s")
           print("All files have been processed ")
           sys.exit(0)
 
