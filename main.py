@@ -22,12 +22,14 @@ JobLimit = 20
 
 TOTALFILES = 0
 def UrlConstructor(artist,track):
+     artist[0] = artist[0].lower()
+     track[0] = track[0].lower()
      regexparen = re.compile(".*?\((.*?)\)")
      regexcrochet = re.compile(".*?\[.*?\]")
      for delete in re.findall(regexparen, track[0]):
           track[0] = str(track[0]).replace(str(delete),"").replace("(","").replace(")","")
-     for delete in re.findall(regexcrochet, track[0]):
-          track[0] = str(track[0]).replace(str(delete),"").replace("[","").replace("]","")
+     for delete in re.findall(regexcrochet, artist[0]):
+          artist[0] = str(artist[0]).replace(str(delete),"").replace("[","").replace("]","")
      track[0] = str(track[0]).rstrip()
      for carset in URL_CARSET : 
           track[0] = track[0].replace(carset[0],carset[1])
@@ -59,6 +61,27 @@ def GetLyrics(artist,track):
      finally:
           return soup
 
+def GetLyricsInFiles(MFile):
+     lyrics = None
+     for LyricsTags in LYRICSTAGS:
+               try :
+                    lyrics = MFile[LyricsTags]
+               except TypeError:
+                    if i == len(LYRICSTAGS):
+                         print("Malformed lyrics")
+                    else :
+                         i += 1
+               except KeyError :
+                    try :
+                         #case ID3
+                         lyrics = MFile["lyricist"]
+                    except :
+                         #case MP4 only works with modified mutagen EasyMP4 library
+                         try :
+                              lyrics = MFile["lyrics"] 
+                         except :
+                              print("Please use modified Mutagen EasyMp4 library with lyrics tag")
+     return lyrics 
 def SearchMusicFiles(dir) : 
     fileList = []
     ProcessFile = []
@@ -67,25 +90,30 @@ def SearchMusicFiles(dir) :
     for SFiles in SUPPORTEDFILES:
         if SFiles == ".flac":
             for y in range(len(fileList[0])):
-                ProcessFile.append(FLAC(fileList[0][y]))
+               MFile = FLAC(fileList[0][y])
+               not GetLyricsInFiles(MFile) and ProcessFile.append(MFile)
         elif SFiles == ".ogg":
             for y in range(len(fileList[1])):
-                ProcessFile.append(OggVorbis(fileList[1][y]))
+               MFile = OggVorbis(fileList[1][y])
+               not GetLyricsInFiles(MFile) and ProcessFile.append(MFile)
         elif SFiles == ".mp3":
             for y in range(len(fileList[2])):
-                try :
-                        ProcessFile.append(EasyID3(fileList[2][y]))  
-                except :
-                        ProcessFile.append(MP3(fileList[2][y]))
+               try :
+                    MFile = EasyID3(fileList[2][y])
+                    not GetLyricsInFiles(MFile) and ProcessFile.append(MFile)
+               except :
+                    MFile = MP3(fileList[2][y])
+                    not GetLyricsInFiles(MFile) and ProcessFile.append(MFile)
         elif SFiles == ".m4a" or SFiles == ".mp4":
             for y in range(len(fileList[3])):
-                ProcessFile.append(EasyMP4(fileList[3][y]))
+               MFile = EasyMP4(fileList[3][y])
+               not GetLyricsInFiles(MFile) and ProcessFile.append(MFile)
             for y in range(len(fileList[4])):
-                ProcessFile.append(EasyMP4(fileList[4][y]))
+               MFile = EasyMP4(fileList[4][y])
+               not GetLyricsInFiles(MFile) and ProcessFile.append(MFile)
     return ProcessFile
 
 def GetLyricsFromFile(MFile):  
-     
      try :
           lyrics = GetLyrics(MFile["artist"],MFile["title"]) 
      except KeyError:
