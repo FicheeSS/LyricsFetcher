@@ -169,7 +169,7 @@ if __name__ == '__main__':
           #print(ProcessFile)
           startupTime = time.time()
           print(str(len(ProcessFile)) + " files found")
-          if len(ProcessFile) == 0 : 
+          if len(ProcessFile) != 0 : 
                #Cut the ProcessFile list into list of JobLimit size
                JobsFile = []
                for i in range(int(len(ProcessFile)/JobLimit+1)):
