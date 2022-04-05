@@ -25,6 +25,10 @@ def UrlConstructor(artist,track):
      track[0] = track[0].lower()
      regexparen = re.compile(".*?\((.*?)\)")
      regexcrochet = re.compile(".*?\[.*?\]")
+     artist[0] = re.sub("[\(\[].*?[\)\]]", "", artist[0])
+     track[0] = re.sub("[\(\[].*?[\)\]]", "", track[0])
+     track[0] = track[0].strip()
+     artist[0] = artist[0].strip()
      for delete in re.findall(regexparen, track[0]):
           track[0] = str(track[0]).replace(str(delete),"").replace("(","").replace(")","")
      for delete in re.findall(regexcrochet, artist[0]):
@@ -54,7 +58,7 @@ def GetLyrics(artist,track):
           print("Non-Ascii symbol in "+ str(artist) + " "+ str(track))
           return ""
      try:
-          soup = BeautifulSoup(html,features="html.parser").find("div",attrs={"class" : "lyrics"}).get_text(separator=" ")
+          soup = BeautifulSoup(html,features="html.parser").select("[data-lyrics-container=true]")[0].get_text(separator=" ")
      except :
           soup =""
      finally:
@@ -128,7 +132,7 @@ def GetLyricsFromFile(MFile):
 def SetLyricsToFiles(MFile):
      lyrics = GetLyricsFromFile(MFile)
      i = 0
-     if len(lyrics) != 0: 
+     if len(lyrics) != 0:
           for LyricsTags in LYRICSTAGS:
                try :
                     MFile[LyricsTags] = lyrics
