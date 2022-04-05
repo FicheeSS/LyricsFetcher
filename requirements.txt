@@ -1,2 +1,5 @@
-mutagen
-bs4
+mutagen~=1.45.1
+bs4~=0.0.1
+clint~=0.5.1
+beautifulsoup4~=4.10.0
+tqdm~=4.64.0
