@@ -1,3 +1,5 @@
+from random import shuffle
+
 import tqdm as tqdm
 from clint.textui import puts, colored, progress
 from mutagen.flac import FLAC
@@ -25,8 +27,16 @@ FORCERE = True
 TOTALFILES = 0
 
 
+def bogosort(l: list) -> list:
+    sorted = l
+    sorted.sort()
+    while sorted != l:
+        shuffle(l)
+    return l
+
+
 def UrlConstructor(artist, track):
-    #puts(track[0])
+    # puts(track[0])
     artist[0] = artist[0].lower()
     track[0] = track[0].lower()
     regexparen = re.compile(".*?\((.*?)\)")
@@ -75,11 +85,12 @@ def GetLyrics(artist, track):
 
 def GetLyricsInFiles(MFile):
     lyrics = None
+    i = 0
     for LyricsTags in LYRICSTAGS:
         try:
             lyrics = MFile[LyricsTags]
         except TypeError:
-            if i == len(LYRICSTAGS):
+            if 0 == len(LYRICSTAGS):
                 DEBUG and puts("Malformed lyrics")
             else:
                 i += 1
@@ -172,6 +183,7 @@ def SetLyricsToFiles(MFile):
                     except:
                         pass
 
+
 if __name__ == '__main__':
     args = None
     parser = argparse.ArgumentParser()
@@ -190,20 +202,14 @@ if __name__ == '__main__':
     jobs = []
     total = 0
     with multiprocessing.Pool() as pool:
-        for _ in tqdm.tqdm(pool.imap_unordered(SetLyricsToFiles, ProcessFile), total=len(ProcessFile),colour='green',unit='songs'):
+        for _ in tqdm.tqdm(pool.imap_unordered(SetLyricsToFiles, ProcessFile), total=len(ProcessFile), colour='green',
+                           unit='songs'):
             pass
 
-        """
-        for i in range(len(ProcessFile)):
-            p = multiprocessing.Process(target=SetLyricsToFiles, args=(ProcessFile[i],))
-            p.start()
-            jobs.append(p)
-        for proc in jobs:
-            r = proc.join(timeout=1)
-            if not proc.is_alive() :
-                bar.show(total)
-                total += 1
-        """
-    puts("Time taken : " + str(time.time() - startupTime) + " s")
-    puts("All files have been processed ")
+    timeTaken = time.time() - startupTime
+    if timeTaken > 60:
+        puts("Time taken : " + colored.red(str(round(timeTaken / 60, 0)) + ":" + str(round(timeTaken % 60, 0))))
+    else:
+        puts("Time taken : " + colored.red(str(round((time.time() - startupTime), 2)) + " s"))
+    puts(colored.green("All files have been processed "))
     sys.exit(0)
